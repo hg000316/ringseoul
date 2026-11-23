@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RingSeoul — Korean phone booking, done for you</title>
+<meta name="description" content="No Korean phone number? RingSeoul calls local restaurants, hair salons, nail studios and clinics in Korea — in natural Korean — and books in your name. $6 per confirmed booking. Pay nothing if it doesn't happen.">
+<meta name="theme-color" content="#F7F3EA">
+<meta property="og:type" content="website">
+<meta property="og:title" content="RingSeoul — Korean phone booking, done for you">
+<meta property="og:description" content="A 24/7 AI booking agent that phones local Korean shops in natural Korean and books in your name. $6 per confirmed booking, no deposit.">
+<meta property="og:site_name" content="RingSeoul">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230B0F10'/><circle cx='16' cy='16' r='4' fill='%23FF4A21'/><path d='M22.5 9.5a9 9 0 0 1 0 13M9.5 22.5a9 9 0 0 1 0-13' stroke='%23FF4A21' stroke-width='2.2' fill='none' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>document.documentElement.classList.add('js');</script>
+<style>
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root{
+  --ink:#0B0F10;
+  --ink-soft:#242A2C;
+  --muted:#5F676B;
+  --cream:#F7F3EA;
+  --paper:#FFFFFF;
+  --line:rgba(11,15,16,.11);
+  --line-soft:rgba(11,15,16,.07);
+  --accent:#FF4A21;
+  --accent-soft:rgba(255,74,33,.10);
+  --jade:#0F6B55;
+  --jade-bright:#38D39F;
+  --radius:20px;
+  --max:1120px;
+  --display:"Instrument Serif",Iowan Old Style,Georgia,"Times New Roman",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --shadow-sm:0 1px 2px rgba(11,15,16,.04);
+  --shadow-md:0 24px 60px -40px rgba(11,15,16,.45);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:16px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+img,svg{display:block;max-width:100%}
+h1,h2,h3,h4{margin:0;font-weight:600;letter-spacing:-.02em;line-height:1.15}
+p{margin:0}
+a{color:inherit}
+ul,ol{margin:0;padding:0;list-style:none}
+button{font:inherit}
+::selection{background:rgba(255,74,33,.22)}
+
+.wrap{width:min(var(--max),100% - 40px);margin-inline:auto}
+.section{padding-block:clamp(56px,8.5vw,104px)}
+section[id]{scroll-margin-top:80px}
+.section-tight{padding-block:clamp(44px,6vw,72px)}
+.section-white{background:var(--paper)}
+.section-dark{background:var(--ink);color:#F3EFE6}
+
+/* ============================================================
+   Type helpers
+   ============================================================ */
+.display{font-family:var(--display);font-weight:400;letter-spacing:-.015em;line-height:1.02}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:11.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);
+}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
+.section-dark .eyebrow{color:rgba(243,239,230,.62)}
+.section-head{max-width:52ch}
+.section-head h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,4.6vw,3.1rem);line-height:1.03;letter-spacing:-.02em;margin:14px 0 0}
+.section-head h2 em{font-style:italic}
+.section-lead{margin-top:16px;font-size:clamp(15px,1.5vw,16.5px);color:var(--muted);max-width:56ch}
+.section-dark .section-lead{color:rgba(243,239,230,.7)}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:52px;padding:0 24px;border-radius:999px;border:1px solid transparent;
+  font-size:15.5px;font-weight:600;text-decoration:none;cursor:pointer;
+  transition:transform .18s ease,background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease;
+  white-space:nowrap;
+}
+.btn svg{flex:none;transition:transform .18s ease}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:0 12px 26px -16px rgba(11,15,16,.85)}
+.btn-primary:hover{background:var(--accent);color:#0B0F10;transform:translateY(-1px)}
+.btn-primary:hover svg{transform:translateX(3px)}
+.btn-ghost{background:transparent;color:var(--ink);border-color:rgba(11,15,16,.18)}
+.btn-ghost:hover{background:rgba(11,15,16,.05);transform:translateY(-1px)}
+.btn-light{background:#F3EFE6;color:var(--ink)}
+.btn-light:hover{background:var(--accent);transform:translateY(-1px)}
+.btn-block{width:100%}
+.btn[disabled]{opacity:.55;cursor:progress}
+.btn-sm{min-height:44px;padding:0 18px;font-size:14.5px}
+
+/* ============================================================
+   Header
+   ============================================================ */
+.site-header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(247,243,234,.8);
+ -webkit-backdrop-filter:saturate(140%) blur(14px);
+  backdrop-filter:saturate(140%) blur(14px);
+  border-bottom:1px solid transparent;
+  transition:border-color .2s ease,background-color .2s ease;
+}
+.site-header.is-scrolled{border-bottom-color:var(--line-soft);background:rgba(247,243,234,.94)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:70px}
+.brand{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-size:18.5px;font-weight:600;letter-spacing:-.025em}
+.brand-mark{
+  width:32px;height:32px;border-radius:9px;background:var(--ink);color:var(--accent);
+  display:grid;place-items:center;flex:none;
+}
+.brand-mark svg{width:19px;height:19px}
+.nav{display:none}
+@media (min-width:900px){
+  .nav{display:block}
+  .nav ul{display:flex;align-items:center;gap:30px}
+  .nav a{font-size:14.5px;text-decoration:none;color:var(--ink-soft);font-weight:500;transition:color .15s}
+  .nav a:hover{color:var(--accent)}
+}
+.header-actions{display:flex;align-items:center;gap:10px}
+.header-actions .btn{min-height:44px;padding:0 20px;font-size:14.5px}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero{position:relative;overflow:hidden;padding-block:clamp(34px,5.5vw,64px) clamp(48px,7vw,92px)}
+.hero::before{
+  content:"";position:absolute;left:50%;top:-38%;width:min(1200px,140%);height:760px;transform:translateX(-38%);
+  background:radial-gradient(closest-side,rgba(255,74,33,.13),rgba(255,74,33,0) 72%);
+  pointer-events:none;
+}
+.hero-grid{position:relative;display:grid;gap:44px;align-items:center}
+@media (min-width:940px){
+  .hero-grid{grid-template-columns:1.04fr .96fr;gap:56px}
+}
+.hero h1{
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(2.7rem,8.4vw,4.6rem);
+  line-height:.97;letter-spacing:-.028em;margin:20px 0 0;
+  max-width:14ch;
+}
+.hero h1 em{font-style:italic;display:inline-block}
+@media (min-width:940px){.hero h1{max-width:13ch}}
+.hero-lead{margin-top:22px;font-size:clamp(15.5px,1.7vw,17.5px);line-height:1.62;color:var(--ink-soft);max-width:46ch}
+.hero-lead strong{font-weight:600;color:var(--ink)}
+.price-pill{
+  display:inline-flex;flex-wrap:wrap;align-items:center;gap:10px 12px;
+  margin-top:24px;padding:9px 15px;border-radius:999px;
+  background:rgba(255,74,33,.09);border:1px solid rgba(255,74,33,.28);
+  font-size:13.5px;font-weight:600;color:#8A2410;
+}
+.price-pill .sep{width:3px;height:3px;border-radius:50%;background:rgba(138,36,16,.35)}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.hero-foot{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;font-size:13px;color:var(--muted)}
+.hero-foot span{display:inline-flex;align-items:center;gap:7px}
+.hero-foot svg{color:var(--jade);flex:none}
+
+/* Call card */
+.call-wrap{position:relative}
+.call-label{
+  text-align:center;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;font-weight:600;
+}
+.call-card{
+  position:relative;max-width:430px;margin-inline:auto;
+  background:linear-gradient(168deg,#171E20 0%,#0B0F10 62%,#0B0F10 100%);
+  border:1px solid rgba(255,255,255,.09);border-radius:26px;
+  padding:18px 18px 20px;color:#F3EFE6;
+  box-shadow:0 40px 80px -46px rgba(11,15,16,.8),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.call-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 4px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.call-live{display:inline-flex;align-items:center;gap:8px;font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9DE7CD}
+.dot-pulse{width:7px;height:7px;border-radius:50%;background:var(--jade-bright);animation:pulse 2s infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(56,211,159,.55)}
+  70%{box-shadow:0 0 0 9px rgba(56,211,159,0)}
+  100%{box-shadow:0 0 0 0 rgba(56,211,159,0)}
+}
+.call-shop{font-size:11.5px;color:rgba(243,239,230,.55);text-align:right;line-height:1.35}
+.bubbles{display:flex;flex-direction:column;gap:11px;padding:18px 2px 4px}
+.bubble{max-width:90%;border-radius:15px;padding:10px 13px;font-size:14px;line-height:1.42}
+.bubble p{margin:0}
+.bubble .tr{display:block;margin-top:5px;font-size:11.5px;line-height:1.4;opacity:.7;font-style:italic}
+.bubble-shop{align-self:flex-start;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.07);border-bottom-left-radius:6px}
+.bubble-agent{align-self:flex-end;background:rgba(255,74,33,.17);border:1px solid rgba(255,74,33,.3);border-bottom-right-radius:6px;text-align:left}
+.confirmed{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;margin-top:14px;padding:12px 14px;border-radius:15px;
+  background:rgba(56,211,159,.11);border:1px solid rgba(56,211,159,.27);
+}
+.confirmed-icon{width:34px;height:34px;border-radius:50%;background:rgba(56,211,159,.16);color:var(--jade-bright);display:grid;place-items:center;flex:none}
+.confirmed b{display:block;font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.confirmed span{display:block;font-size:11.5px;color:rgba(243,239,230,.62);margin-top:1px}
+.call-price{margin-left:auto;text-align:right;font-size:11.5px;color:rgba(243,239,230,.55);flex:none}
+.call-price b{display:block;color:#F3EFE6;font-size:14px}
+
+/* ============================================================
+   Pain band (dark)
+   ============================================================ */
+.pain-head{display:grid;gap:18px}
+@media (min-width:820px){
+  .pain-head{grid-template-columns:1fr 1fr;gap:48px;align-items:end}
+}
+.pain-grid{display:grid;gap:26px;margin-top:clamp(32px,5vw,52px)}
+@media (min-width:820px){.pain-grid{grid-template-columns:repeat(3,1fr);gap:32px}}
+.pain-item{border-top:1px solid rgba(243,239,230,.18);padding-top:18px}
+.pain-num{font-family:var(--display);font-size:13px;letter-spacing:.16em;color:var(--accent)}
+.pain-item h3{font-size:1.1rem;margin-top:9px;letter-spacing:-.015em}
+.pain-item p{margin-top:9px;font-size:14.5px;line-height:1.62;color:rgba(243,239,230,.68)}
+.pain-item p b{color:#F3EFE6;font-weight:600}
+.pain-close{margin-top:clamp(30px,4vw,44px);padding-top:22px;border-top:1px solid rgba(243,239,230,.18);display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;font-size:15.5px;color:rgba(243,239,230,.82)}
+.pain-close strong{color:#F3EFE6;font-weight:600}
+.pain-close svg{color:var(--accent)}
+
+/* ============================================================
+   Steps
+   ============================================================ */
+.steps{display:grid;gap:18px;margin-top:clamp(30px,4.5vw,48px)}
+@media (min-width:880px){.steps{grid-template-columns:repeat(3,1fr);gap:20px}}
+.step{
+  position:relative;background:var(--paper);border:1px solid var(--line-soft);
+  border-radius:var(--radius);padding:26px 24px;box-shadow:var(--shadow-sm);
+  display:flex;flex-direction:column;
+}
+.step-index{font-family:var(--display);font-size:2.5rem;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.step h3{font-size:1.12rem;margin-top:14px;line-height:1.3}
+.step p{margin-top:10px;font-size:14.6px;color:var(--muted);line-height:1.62}
+.step-meta{
+  margin-top:auto;padding-top:16px;font-size:11.5px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-soft);border-top:1px dashed var(--line);
+}
+
+/* ============================================================
+   Can / cannot
+   ============================================================ */
+.support-grid{display:grid;gap:18px;margin-top:clamp(30px,4.5vw,48px)}
+@media (min-width:880px){.support-grid{grid-template-columns:1.06fr .94fr;gap:22px}}
+.support-card{background:var(--paper);border:1px solid var(--line-soft);border-radius:22px;padding:clamp(22px,3vw,30px);box-shadow:var(--shadow-sm)}
+.support-card h3{font-size:1.16rem;display:flex;align-items:center;gap:10px}
+.support-card h3 .tag{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:rgba(15,107,85,.1);color:var(--jade)}
+.support-card.is-out h3 .tag{background:rgba(11,15,16,.06);color:var(--muted)}
+.support-card > p.sub{margin-top:10px;font-size:14px;color:var(--muted)}
+.support-list{margin-top:14px}
+.support-list li{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--line-soft)}
+.support-list li:last-child{border-bottom:0;padding-bottom:2px}
+.check,.cross{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;margin-top:2px}
+.check{background:rgba(15,107,85,.1);color:var(--jade)}
+.cross{background:rgba(11,15,16,.06);color:var(--muted)}
+.support-list b{display:block;font-size:14.6px;font-weight:600;letter-spacing:-.01em}
+.support-list span{display:block;font-size:13.4px;color:var(--muted);line-height:1.55;margin-top:2px}
+.support-note{margin-top:18px;font-size:13.2px;color:var(--muted);padding:12px 14px;border-radius:12px;background:var(--cream);border:1px solid var(--line-soft)}
+.support-note b{color:var(--ink-soft)}
+
+/* ============================================================
+   Pricing
+   ============================================================ */
+.plans{display:grid;gap:18px;margin-top:clamp(30px,4.5vw,48px)}
+@media (min-width:820px){.plans{grid-template-columns:1fr 1fr;gap:20px;max-width:860px}}
+.plan{
+  position:relative;display:flex;flex-direction:column;
+  background:var(--paper);border:1px solid var(--line);border-radius:24px;
+  padding:clamp(24px,3vw,30px);box-shadow:var(--shadow-sm);
+}
+.plan-featured{background:var(--ink);border-color:var(--ink);color:#F3EFE6;box-shadow:0 34px 70px -44px rgba(11,15,16,.85)}
+.plan-badge{
+  align-self:flex-start;font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+  padding:5px 10px;border-radius:999px;background:rgba(11,15,16,.06);color:var(--muted);margin-bottom:16px;
+}
+.plan-featured .plan-badge{background:rgba(255,74,33,.18);color:#FFB6A2}
+.plan-featured .plan-badge.muted{background:rgba(255,255,255,.09);color:rgba(243,239,230,.65)}
+.plan-name{font-size:1.05rem;font-weight:600;letter-spacing:-.01em}
+.plan-price{display:flex;align-items:baseline;gap:8px;margin-top:10px}
+.plan-price .amount{font-family:var(--display);font-size:clamp(2.9rem,6vw,3.5rem);line-height:1;letter-spacing:-.03em}
+.plan-price .per{font-size:13.5px;color:var(--muted);line-height:1.35;max-width:9em}
+.plan-featured .plan-price .per{color:rgba(243,239,230,.62)}
+.plan ul{margin-top:20px;display:grid;gap:10px}
+.plan li{display:flex;gap:10px;font-size:14.4px;line-height:1.5;color:var(--ink-soft)}
+.plan-featured li{color:rgba(243,239,230,.85)}
+.plan li svg{flex:none;margin-top:3px;color:var(--jade)}
+.plan-featured li svg{color:var(--jade-bright)}
+.plan .btn{margin-top:26px}
+.plan-foot{margin-top:12px;font-size:12.4px;color:var(--muted);text-align:center}
+.plan-featured .plan-foot{color:rgba(243,239,230,.55)}
+
+/* Comparison table */
+.compare{margin-top:clamp(28px,4vw,40px);background:var(--paper);border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.compare-head{padding:20px 22px 16px;border-bottom:1px solid var(--line-soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.compare-head h3{font-size:1rem;letter-spacing:-.01em}
+.compare-head span{font-size:12.5px;color:var(--muted)}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{text-align:left;padding:15px 18px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+thead th{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-top:16px;padding-bottom:14px}
+thead th.us{color:var(--ink)}
+tbody th{font-weight:500;font-size:13.6px;color:var(--muted);white-space:nowrap;width:22%}
+tbody td{font-size:14.4px;color:var(--ink-soft)}
+td.us{font-weight:600;color:var(--ink);background:rgba(255,74,33,.045)}
+thead th.us{background:rgba(255,74,33,.045)}
+tbody tr:last-child th,tbody tr:last-child td{border-bottom:0}
+.compare-foot{padding:14px 20px 18px;font-size:12.2px;color:var(--muted);line-height:1.55;border-top:1px solid var(--line-soft)}
+
+/* ============================================================
+   Form
+   ============================================================ */
+.request-grid{display:grid;gap:32px;margin-top:clamp(28px,4vw,44px)}
+@media (min-width:940px){
+  .request-grid{grid-template-columns:.82fr 1.18fr;gap:48px;align-items:start}
+}
+.request-aside{position:sticky;top:96px;display:none}
+@media (min-width:940px){.request-aside{display:block}}
+.request-aside h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,3.6vw,2.7rem);line-height:1.03;letter-spacing:-.02em;margin-top:14px}
+.request-aside h2 em{font-style:italic}
+.request-aside .section-lead{margin-top:16px}
+.aside-list{margin-top:26px;display:grid;gap:14px}
+.aside-list li{display:flex;gap:11px;font-size:13.8px;color:var(--muted);line-height:1.55}
+.aside-list svg{flex:none;margin-top:2px;color:var(--jade)}
+.aside-price{margin-top:26px;padding:16px 18px;border-radius:16px;background:var(--paper);border:1px solid var(--line);font-size:13.5px;color:var(--muted)}
+.aside-price b{display:block;font-family:var(--display);font-size:1.6rem;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
+
+.form-card{
+  background:var(--paper);border:1px solid var(--line);border-radius:26px;
+  padding:clamp(22px,3.4vw,36px);box-shadow:var(--shadow-md);
+  scroll-margin-top:92px;
+}
+.form-head{margin-bottom:22px}
+.form-head h2{font-family:var(--display);font-weight:400;font-size:clamp(1.7rem,4vw,1.95rem);letter-spacing:-.02em;line-height:1.05}
+.form-head p{margin-top:8px;font-size:14px;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:7px}
+.field > label,.field-label{font-size:13px;font-weight:600;letter-spacing:-.005em;color:var(--ink-soft)}
+.field .opt{font-weight:400;color:var(--muted)}
+.field .hint{font-size:12.3px;color:var(--muted);line-height:1.45}
+input[type=text],input[type=email],input[type=date],input[type=time],input[type=number],textarea{
+  width:100%;font-family:inherit;font-size:15px;color:var(--ink);
+  background:#FBFAF6;border:1px solid var(--line);border-radius:12px;
+  padding:13px 14px;min-height:50px;transition:border-color .15s,box-shadow .15s,background-color .15s;
+}
+input[type=text],input[type=email],input[type=number],textarea{-webkit-appearance:none;appearance:none}
+input[type=date],input[type=time]{min-height:50px;-webkit-min-logical-height:1em}
+textarea{min-height:88px;resize:vertical;line-height:1.55}
+input::placeholder,textarea::placeholder{color:#9AA1A4}
+input:hover,textarea:hover{border-color:rgba(11,15,16,.2)}
+input:focus,textarea:focus{outline:none;background:#fff;border-color:var(--ink);box-shadow:0 0 0 3px rgba(255,74,33,.17)}
+input:user-invalid,textarea:user-invalid{border-color:rgba(200,50,30,.55);background:#FFF7F5}
+.field-row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+.form-grid{display:grid;gap:18px}
+@media (min-width:700px){.form-grid.cols-2{grid-template-columns:1fr 1fr}}
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.segmented{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (min-width:600px){.segmented{grid-template-columns:repeat(4,1fr)}}
+.segmented input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.segmented label{
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  min-height:46px;padding:9px 8px;border-radius:12px;border:1px solid var(--line);
+  background:#FBFAF6;font-size:13.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;
+  transition:background-color .15s,color .15s,border-color .15s,box-shadow .15s;line-height:1.25;
+}
+.segmented label:hover{border-color:rgba(11,15,16,.24)}
+.segmented input:checked + label{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:600}
+.segmented input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+.form-actions{margin-top:22px;display:grid;gap:12px}
+.form-disclaimer{font-size:12.3px;color:var(--muted);text-align:center;line-height:1.5}
+.form-disclaimer b{color:var(--ink-soft);font-weight:600}
+.legend-required{font-weight:400;color:var(--muted)}
+
+/* Success */
+.success{display:none}
+.form-card.is-success #booking-form{display:none}
+.form-card.is-success .form-head{display:none}
+.form-card.is-success .success{display:block}
+.success-icon{width:52px;height:52px;border-radius:50%;background:rgba(15,107,85,.1);color:var(--jade);display:grid;place-items:center;margin-bottom:16px}
+.success h3{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,4.4vw,2.4rem);letter-spacing:-.02em;line-height:1.05}
+.success h3:focus{outline:none}
+.success-lead{margin-top:10px;font-size:14.6px;color:var(--muted);line-height:1.6}
+.success-lead strong{color:var(--ink);font-weight:600;word-break:break-word}
+.summary{margin-top:20px;padding:18px;border-radius:16px;background:var(--cream);border:1px solid var(--line-soft);display:grid;gap:11px}
+.summary-row{display:flex;justify-content:space-between;align-items:baseline;gap:18px;font-size:13.8px}
+.summary-row > span{color:var(--muted);flex:none}
+.summary-row > strong{font-weight:600;text-align:right;word-break:break-word;line-height:1.4}
+.summary-row[hidden]{display:none}
+.success-note{margin-top:16px;font-size:12.8px;color:var(--muted);line-height:1.55;padding:12px 14px;border-radius:12px;border:1px dashed var(--line)}
+.success .btn{margin-top:20px}
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+.faq{margin-top:clamp(26px,4vw,40px);border-top:1px solid var(--line)}
+.faq-item{border-bottom:1px solid var(--line)}
+.faq-item summary{
+  display:flex;align-items:center;justify-content:space-between;gap:20px;
+  padding:21px 2px;cursor:pointer;list-style:none;font-size:16px;font-weight:600;letter-spacing:-.012em;
+  transition:color .15s;
+}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:hover{color:var(--accent)}
+.faq-icon{flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:transform .22s,background-color .22s,color .22s,border-color .22s}
+.faq-item[open] .faq-icon{transform:rotate(45deg);background:var(--ink);border-color:var(--ink);color:#fff}
+.faq-answer{padding:0 44px 24px 2px;font-size:14.8px;color:var(--muted);line-height:1.66;max-width:72ch}
+.faq-answer b{color:var(--ink-soft);font-weight:600}
+.faq-answer a{color:var(--ink);text-decoration-color:var(--accent);text-underline-offset:3px}
+
+/* ============================================================
+   Final CTA
+   ============================================================ */
+.final{position:relative;overflow:hidden;text-align:center;padding-block:clamp(56px,8vw,96px)}
+.final::before{
+  content:"";position:absolute;left:50%;top:-30%;width:900px;height:520px;transform:translateX(-50%);
+  background:radial-gradient(closest-side,rgba(255,74,33,.22),rgba(255,74,33,0) 70%);pointer-events:none;
+}
+.final-inner{position:relative;max-width:640px;margin-inline:auto}
+.final h2{font-family:var(--display);font-weight:400;font-size:clamp(2.1rem,5.4vw,3.4rem);line-height:1.02;letter-spacing:-.025em}
+.final h2 em{font-style:italic}
+.final p{margin-top:16px;font-size:15.5px;color:rgba(243,239,230,.7)}
+.final .btn{margin-top:28px}
+.final p.final-note{margin-top:14px;font-size:12.5px;color:rgba(243,239,230,.5);letter-spacing:.01em}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer{background:var(--ink);color:rgba(243,239,230,.62);border-top:1px solid rgba(243,239,230,.1);padding-block:40px 34px}
+.footer-top{display:flex;flex-wrap:wrap;gap:24px 40px;justify-content:space-between;align-items:flex-start}
+.footer-brand .brand{color:#F3EFE6}
+.footer-brand .brand-mark{background:rgba(255,255,255,.1)}
+.footer-tag{margin-top:12px;font-size:13.5px;max-width:30ch;line-height:1.55}
+.footer-links{display:flex;flex-wrap:wrap;gap:10px 26px;font-size:13.5px}
+.footer-links a{text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:#F3EFE6}
+.footer-legal{margin-top:32px;padding-top:20px;border-top:1px solid rgba(243,239,230,.1);display:grid;gap:8px;font-size:11.8px;line-height:1.6;color:rgba(243,239,230,.55)}
+.footer-legal .copy{color:rgba(243,239,230,.6);font-size:12.4px}
+
+/* ============================================================
+   Mobile sticky CTA
+   ============================================================ */
+.mobile-cta{
+  position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:60;
+  display:none;
+}
+.mobile-cta a{
+  display:flex;align-items:center;justify-content:space-between;gap:14px;text-decoration:none;
+  background:var(--ink);color:#fff;padding:13px 16px 13px 20px;border-radius:18px;
+  box-shadow:0 18px 40px -18px rgba(11,15,16,.85);border:1px solid rgba(255,255,255,.08);
+}
+.mobile-cta b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em}
+.mobile-cta small{display:block;font-size:11.5px;color:rgba(243,239,230,.6);margin-top:1px}
+.mobile-cta .arrow{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#0B0F10;display:grid;place-items:center;flex:none}
+@media (max-width:760px){
+  body.show-mobile-cta .mobile-cta{display:block}
+  body.show-mobile-cta{padding-bottom:84px}
+}
+
+/* ============================================================
+   Reveal
+   ============================================================ */
+html.js .reveal{opacity:0;transform:translateY(16px);transition:opacity .65s cubic-bezier(.2,.7,.3,1),transform .65s cubic-bezier(.2,.7,.3,1)}
+html.js .reveal.in{opacity:1;transform:none}
+html.js .reveal.d1{transition-delay:.07s}
+html.js .reveal.d2{transition-delay:.14s}
+html.js .reveal.d3{transition-delay:.21s}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  html.js .reveal{opacity:1;transform:none;transition:none}
+  .dot-pulse{animation:none}
+}
+
+/* very small phones */
+@media (max-width:399px){
+  .brand{font-size:17px}
+  .header-actions .btn{padding:0 14px;font-size:13.5px;min-height:42px}
+  .hero h1{font-size:2.45rem}
+  .hero-cta .btn{width:100%}
+  .plan-price .amount{font-size:2.7rem}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header" id="top">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="RingSeoul home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
+          <path d="M17.4 6.6a7.7 7.7 0 0 1 0 10.8M6.6 17.4a7.7 7.7 0 0 1 0-10.8"/>
+        </svg>
+      </span>
+      RingSeoul
+    </a>
+    <nav class="nav" aria-label="Main">
+      <ul>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#coverage">What we book</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-primary btn-sm" href="#request">
+        Request a booking
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================ HERO ============================ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Korea's best tables only take phone calls</span>
+        <h1>No Korean number? <em>We make the call.</em></h1>
+        <p class="hero-lead">
+          RingSeoul is a 24/7 AI booking agent that phones local restaurants, hair salons,
+          nail studios and clinics in Korea — <strong>in natural Korean, in your name</strong>.
+          No Korean phone number, no Naver verification, no Korean friend to persuade.
+        </p>
+        <div class="price-pill">
+          <span>$6 per confirmed booking</span>
+          <span class="sep" aria-hidden="true"></span>
+          <span>Pay only when it works</span>
+          <span class="sep" aria-hidden="true"></span>
+          <span>No deposit</span>
+        </div>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#request">
+            Request a booking
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+        <div class="hero-foot">
+          <span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            No subscription
+          </span>
+          <span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            No ₩180,000 deposit
+          </span>
+          <span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            Answered in English
+          </span>
+        </div>
+      </div>
+
+      <div class="call-wrap reveal d1">
+        <p class="call-label">Sample call · our agent to a Yeonnam-dong restaurant</p>
+        <div class="call-card" role="img" aria-label="Sample phone call: an AI agent calls a Yeonnam-dong restaurant in Korean and books a table for two at 8pm, confirmed for $6.">
+          <div class="call-top">
+            <span class="call-live"><span class="dot-pulse" aria-hidden="true"></span>On call · 00:41</span>
+            <span class="call-shop">Outgoing · 070-••••-2184<br>Yeonnam-dong, Seoul</span>
+          </div>
+          <div class="bubbles">
+            <div class="bubble bubble-shop">
+              <p>여보세요, 어서 오세요.</p>
+              <span class="tr">Hello, how can I help?</span>
+            </div>
+            <div class="bubble bubble-agent">
+              <p>안녕하세요, 오늘 저녁 7시 반에 두 명 예약 가능할까요?</p>
+              <span class="tr">Hi — any chance of a table for two at 7:30 tonight?</span>
+            </div>
+            <div class="bubble bubble-shop">
+              <p>7시 반은 마감이고, 8시는 되는데요.</p>
+              <span class="tr">7:30 is full, but 8:00 works.</span>
+            </div>
+            <div class="bubble bubble-agent">
+              <p>그럼 8시로 부탁드립니다. 이름은 Emma Clarke입니다.</p>
+              <span class="tr">Let's take 8:00. The name is Emma Clarke.</span>
+            </div>
+            <div class="bubble bubble-shop">
+              <p>네, 8시 두 분 예약 잡아드렸습니다.</p>
+              <span class="tr">Done — 8 o'clock, table for two.</span>
+            </div>
+          </div>
+          <div class="confirmed">
+            <span class="confirmed-icon" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </span>
+            <div>
+              <b>Booking confirmed</b>
+              <span>8:00 PM · 2 guests · emailed in English</span>
+            </div>
+            <div class="call-price"><b>$6</b>charged once</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PAIN ============================ -->
+  <section class="section section-dark">
+    <div class="wrap">
+      <div class="pain-head">
+        <div class="section-head">
+          <span class="eyebrow">Why it's harder than it looks</span>
+          <h2>Korea's best places don't take <em>online</em> bookings.</h2>
+        </div>
+        <p class="section-lead">
+          The problem isn't that you don't speak Korean. It's that the shop's only booking channel
+          is a phone call — answered by a person, in Korean, during business hours.
+        </p>
+      </div>
+
+      <div class="pain-grid">
+        <div class="pain-item reveal">
+          <span class="pain-num">01</span>
+          <h3>The Korean number wall</h3>
+          <p>Korean apps and booking pages check for a domestic number and <b>본인인증</b> (ID verification). A +1, +44 or +61 number doesn't just fail quietly — the form won't accept you at all.</p>
+        </div>
+        <div class="pain-item reveal d1">
+          <span class="pain-num">02</span>
+          <h3>Phone only, Korean only</h3>
+          <p>The one-chair salon, the twelve-seat counter, the neighbourhood clinic: much of what makes a trip memorable takes bookings by phone. No website, no English, no email.</p>
+        </div>
+        <div class="pain-item reveal d2">
+          <span class="pain-num">03</span>
+          <h3>The deposit you can't send</h3>
+          <p>Some places hold a table only after a deposit by Korean bank transfer. No Korean card, no booking — so travellers give up, or ask a Korean friend to call on their behalf.</p>
+        </div>
+      </div>
+
+      <p class="pain-close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        <span><strong>That's the gap we fill.</strong> You send the link. We do the talking.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================ HOW ============================ -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>Three steps. <em>One email.</em></h2>
+        <p class="section-lead">
+          You don't need to speak Korean on the phone, and you don't need to be awake when the shop is.
+          Requests are called in during opening hours, wherever you are in the world.
+        </p>
+      </div>
+
+      <div class="steps">
+        <article class="step reveal">
+          <span class="step-index">01</span>
+          <h3>Send us the place</h3>
+          <p>Paste a Naver Map, Google Maps or Instagram link — or just the name and the neighbourhood. Add your first and second choice of time, and how many of you there are.</p>
+          <p class="step-meta">About a minute</p>
+        </article>
+        <article class="step reveal d1">
+          <span class="step-index">02</span>
+          <h3>We call, in Korean</h3>
+          <p>A Korean-speaking agent phones the shop, handles the usual questions, and offers your backup time if the first one is gone. It stays on the line until someone confirms.</p>
+          <p class="step-meta">During shop hours</p>
+        </article>
+        <article class="step reveal d2">
+          <span class="step-index">03</span>
+          <h3>You get the confirmation</h3>
+          <p>We email the confirmed time, the address and what to say when you arrive — in English. The $6 is charged only after the shop says yes.</p>
+          <p class="step-meta">Usually the same day</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ COVERAGE ============================ -->
+  <section class="section section-white" id="coverage">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Coverage</span>
+        <h2>What we can book — <em>and what we can't</em></h2>
+        <p class="section-lead">
+          We'd rather tell you now than take your money for a call that can't work.
+          If your place falls in the second column, you'll hear it before you pay a cent.
+        </p>
+      </div>
+
+      <div class="support-grid">
+        <div class="support-card reveal">
+          <h3>We can call <span class="tag">Yes</span></h3>
+          <p class="sub">Anything a Korean speaker could book over the phone, without a prepayment.</p>
+          <ul class="support-list">
+            <li>
+              <span class="check" aria-hidden="true">✓</span>
+              <div>
+                <b>Local restaurants</b>
+                <span>Neighbourhood tables, BBQ, hanok kitchens — the places that never show up in an English app.</span>
+              </div>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">✓</span>
+              <div>
+                <b>Independent hair salons &amp; barbershops</b>
+                <span>Cuts, colour, perms — one-chair studios included.</span>
+              </div>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">✓</span>
+              <div>
+                <b>Nail &amp; lash studios</b>
+                <span>Gel, extensions, lash lifts, brow work.</span>
+              </div>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">✓</span>
+              <div>
+                <b>Clinics &amp; 한의원</b>
+                <span>General clinics, dermatology consultations, Korean medicine. We book the visit — not the medical advice.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="support-card is-out reveal d1">
+          <h3>We can't (yet) <span class="tag">Not now</span></h3>
+          <p class="sub">During the early beta these are left out on purpose. We're working on them.</p>
+          <ul class="support-list">
+            <li>
+              <span class="cross" aria-hidden="true">✕</span>
+              <div>
+                <b>Places that need a prepaid deposit</b>
+                <span>If the shop only holds a table after a Korean bank transfer or Korean card payment, we can't complete it for you.</span>
+              </div>
+            </li>
+            <li>
+              <span class="cross" aria-hidden="true">✕</span>
+              <div>
+                <b>CatchTable or Naver-only waiting lists</b>
+                <span>If the shop books exclusively through an app queue, a phone call can't jump ahead of it.</span>
+              </div>
+            </li>
+            <li>
+              <span class="cross" aria-hidden="true">✕</span>
+              <div>
+                <b>Chain restaurants &amp; hotels</b>
+                <span>Most large brands only take online bookings or a central call centre, not the branch itself.</span>
+              </div>
+            </li>
+            <li>
+              <span class="cross" aria-hidden="true">✕</span>
+              <div>
+                <b>Tickets &amp; events</b>
+                <span>Concerts, sports and package tours run on separate ticketing systems we don't cover.</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="support-note reveal">
+        <b>Not sure about a place?</b> Send it anyway with a note — we'll check whether it can be booked by phone and reply before you're charged.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================ PRICING ============================ -->
+  <section class="section" id="pricing">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Pricing</span>
+        <h2>Pay for bookings, <em>not minutes.</em></h2>
+        <p class="section-lead">
+          A human concierge bills from the first minute, after a large upfront deposit.
+          We charge a flat $6 — once, and only after the shop confirms your table.
+        </p>
+      </div>
+
+      <div class="plans">
+        <div class="plan reveal">
+          <span class="plan-badge">One booking</span>
+          <h3 class="plan-name">Single Call</h3>
+          <p class="plan-price"><span class="amount">$6</span><span class="per">per confirmed booking</span></p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>One shop, called for you</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>First and second choice of time</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Confirmation email in English</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>$0 if we can't confirm</li>
+          </ul>
+          <a class="btn btn-ghost btn-block" href="#request">Request a booking</a>
+          <p class="plan-foot">No account, no card saved, no subscription.</p>
+        </div>
+
+        <div class="plan plan-featured reveal d1">
+          <span class="plan-badge">Best for a week in Seoul</span>
+          <h3 class="plan-name">Seoul Trip Pass</h3>
+          <p class="plan-price"><span class="amount">$15</span><span class="per">3 confirmed bookings · $5 each</span></p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Three bookings, any shops</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Dinner, a haircut, a clinic — one pass</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>English confirmation for each one</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Still $0 for anything we can't confirm</li>
+          </ul>
+          <a class="btn btn-light btn-block" href="#request">Request with a pass</a>
+          <p class="plan-foot">Save $3 against three single calls.</p>
+        </div>
+      </div>
+
+      <div class="compare reveal">
+        <div class="compare-head">
+          <h3>RingSeoul vs. a human concierge</h3>
+          <span>The same idea, without the meter running.</span>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <caption class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Comparison of RingSeoul and a human concierge service</caption>
+            <thead>
+              <tr>
+                <th scope="col"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Item</span></th>
+                <th scope="col" class="us">RingSeoul</th>
+                <th scope="col">Human concierge</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Price</th>
+                <td class="us">$6 per booking</td>
+                <td>₩1,250–2,000 per minute<br>(≈ $0.90–1.45)</td>
+              </tr>
+              <tr>
+                <th scope="row">Upfront</th>
+                <td class="us">Nothing</td>
+                <td>₩180,000 minimum deposit<br>(≈ $130) plus 8.5% card fee</td>
+              </tr>
+              <tr>
+                <th scope="row">Minimum spend</th>
+                <td class="us">None</td>
+                <td>The full deposit, before anyone helps</td>
+              </tr>
+              <tr>
+                <th scope="row">When you're billed</th>
+                <td class="us">Only after the shop confirms</td>
+                <td>From the first minute — booked or not</td>
+              </tr>
+              <tr>
+                <th scope="row">Hours</th>
+                <td class="us">24/7 request, called in during shop hours</td>
+                <td>Limited business hours</td>
+              </tr>
+              <tr>
+                <th scope="row">Speed</th>
+                <td class="us">Usually the same day</td>
+                <td>Wait for an agent to be free</td>
+              </tr>
+              <tr>
+                <th scope="row">What happens</th>
+                <td class="us">A Korean call to the shop, booked in your name</td>
+                <td>Chat-based help, priced by the minute</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="compare-foot">
+          Human concierge figures based on publicly listed Korea concierge rates (as of November 2026):
+          ₩1,250–2,000 per minute, ₩180,000 minimum deposit, 8.5% card fee. RingSeoul prices are beta pricing in USD.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ REQUEST ============================ -->
+  <section class="section" id="request">
+    <div class="wrap request-grid">
+      <aside class="request-aside">
+        <span class="eyebrow">Early access beta</span>
+        <h2>Tell us the place.<br><em>We'll do the talking.</em></h2>
+        <p class="section-lead">
+          Every request is read by a person on our side, then called in by our Korean-speaking agent.
+          During the beta we're onboarding travellers one city at a time, so response times can stretch —
+          but you're never charged for a booking that doesn't happen.
+        </p>
+        <ul class="aside-list">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            No Korean number, no Naver or Kakao account
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            Called in natural Korean, confirmed in English
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+            $6 only after the shop says yes
+          </li>
+        </ul>
+        <div class="aside-price">
+          <b>Nothing due now</b>
+          You'll get a payment link by email after a booking is confirmed.
+        </div>
+      </aside>
+
+      <div class="form-card" id="form-card">
+        <div class="form-head">
+          <h2>Request a booking</h2>
+          <p>Two minutes now, one phone call later.</p>
+        </div>
+
+        <form id="booking-form" novalidate>
+          <div class="form-grid">
+            <fieldset>
+              <legend>What kind of place? <span class="legend-required">(required)</span></legend>
+              <div class="segmented">
+                <input type="radio" name="sector" id="sector-restaurant" value="Restaurant" data-label="Restaurant" checked>
+                <label for="sector-restaurant">Restaurant</label>
+                <input type="radio" name="sector" id="sector-beauty" value="Hair &amp; Beauty" data-label="Hair &amp; Beauty">
+                <label for="sector-beauty">Hair &amp; Beauty</label>
+                <input type="radio" name="sector" id="sector-clinic" value="Clinic" data-label="Clinic">
+                <label for="sector-clinic">Clinic</label>
+                <input type="radio" name="sector" id="sector-other" value="Other" data-label="Other">
+                <label for="sector-other">Other</label>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label for="shop">Shop name or link <span class="legend-required">(required)</span></label>
+              <input type="text" id="shop" name="shop" required maxlength="300" autocomplete="off"
+                     placeholder="e.g. Bistro in Yeonnam-dong — or paste a Naver Map / Google Maps / Instagram link">
+              <span class="hint">A link is best. A name plus the neighbourhood works too.</span>
+            </div>
+
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label for="date1">First choice — date <span class="legend-required">(required)</span></label>
+                <input type="date" id="date1" name="date1" required>
+              </div>
+              <div class="field">
+                <label for="time1">First choice — time <span class="legend-required">(required)</span></label>
+                <input type="time" id="time1" name="time1" required step="900">
+              </div>
+            </div>
+
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label for="date2">Second choice — date <span class="opt">(optional)</span></label>
+                <input type="date" id="date2" name="date2">
+              </div>
+              <div class="field">
+                <label for="time2">Second choice — time <span class="opt">(optional)</span></label>
+                <input type="time" id="time2" name="time2" step="900">
+              </div>
+            </div>
+            <span class="hint" style="margin-top:-8px">If your first time is full, we'll offer this one to the shop.</span>
+
+            <div class="form-grid cols-2">
+              <div class="field">
+                <label for="party">How many people? <span class="legend-required">(required)</span></label>
+                <input type="number" id="party" name="party" min="1" max="30" step="1" value="2" required inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="name">Name for the booking <span class="legend-required">(required)</span></label>
+                <input type="text" id="name" name="name" required maxlength="80" autocomplete="name" placeholder="The name we'll give the shop">
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="email">Email <span class="legend-required">(required)</span></label>
+              <input type="email" id="email" name="email" required maxlength="120" autocomplete="email" inputmode="email" placeholder="you@example.com">
+              <span class="hint">Where we send the confirmation — or the reason we couldn't get one.</span>
+            </div>
+
+            <div class="field">
+              <label for="notes">Anything the shop should know? <span class="opt">(optional)</span></label>
+              <textarea id="notes" name="notes" maxlength="500" placeholder="Allergies, a specific stylist, the service you want, wheelchair access…"></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary btn-block">
+              Request this booking
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+            </button>
+            <p class="form-disclaimer">
+              <b>Nothing is charged now.</b> You pay $6 only if the shop confirms —
+              and you'll get the payment link by email. We use your email only for this request.
+            </p>
+          </div>
+          <noscript><p class="form-disclaimer" style="margin-top:10px">This form needs JavaScript to submit. Please enable it and try again.</p></noscript>
+        </form>
+
+        <div class="success" id="success" aria-live="polite">
+          <div class="success-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <span class="eyebrow">Early access beta</span>
+          <h3 id="success-title" tabindex="-1" style="margin-top:10px">Request received.</h3>
+          <p class="success-lead">
+            We'll call during the shop's opening hours and email
+            <strong id="s-email">your address</strong>
+            with either a confirmed booking or a clear note on what happened.
+          </p>
+
+          <div class="summary" role="group" aria-label="Summary of your request">
+            <div class="summary-row"><span>Request</span><strong id="s-id">—</strong></div>
+            <div class="summary-row"><span>Shop</span><strong id="s-shop">—</strong></div>
+            <div class="summary-row"><span>Type</span><strong id="s-sector">—</strong></div>
+            <div class="summary-row"><span>First choice</span><strong id="s-first">—</strong></div>
+            <div class="summary-row" id="s-second-row" hidden><span>Second choice</span><strong id="s-second">—</strong></div>
+            <div class="summary-row"><span>Party</span><strong id="s-party">—</strong></div>
+            <div class="summary-row"><span>Name</span><strong id="s-name">—</strong></div>
+          </div>
+
+          <p class="success-note">
+            Nothing has been charged. If the shop confirms, you'll get a payment link for $6 by email —
+            if it doesn't, you owe nothing and we'll suggest another time or place.
+          </p>
+          <button type="button" class="btn btn-ghost btn-block" id="again">Make another request</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FAQ ============================ -->
+  <section class="section section-white" id="faq">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Questions</span>
+        <h2>The things people ask <em>before</em> their first call.</h2>
+      </div>
+
+      <div class="faq reveal">
+        <details class="faq-item">
+          <summary>
+            Do I need a Korean phone number or Naver account?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            No. No Korean number, no Naver or Kakao account, no <b>본인인증</b> (identity verification).
+            We call from a Korean line and book under the name you give us. All we need from you is an email address.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            What happens if the shop says no?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            You pay nothing. We offer your second-choice time, and if that's gone too we email you
+            what the shop said and suggest alternatives nearby. The $6 applies only to a booking that
+            actually gets confirmed.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            What language do I use?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            Write to us in English. Our agent speaks natural Korean on the phone, handles the shop's
+            questions, and sends your confirmation back in English — the time, the address, and
+            what to say when you walk in.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Do I pay the restaurant through you?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            No. You pay the shop directly, as you would anywhere. The $6 covers the call and the
+            booking — not the meal, the cut or the treatment. We never take a cut of what you spend there.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            How quickly will I hear back?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            Most requests are called in the same day, within shop opening hours. Booking for tonight?
+            Send it early — small places fill up, and many close between lunch and dinner.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Can you book anything in Korea?
+            <span class="faq-icon" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <div class="faq-answer">
+            No — and we say so up front. Restaurants, independent salons, nail and lash studios,
+            clinics and 한의원 are in. Places that need a deposit by Korean bank transfer, shops that
+            only take bookings through CatchTable or Naver, and ticketed events are out for now.
+            If your request can't work, we tell you before you're charged.
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FINAL ============================ -->
+  <section class="final section-dark">
+    <div class="wrap final-inner">
+      <h2>Stop asking a Korean friend <em>to call.</em></h2>
+      <p>Send us the link. We'll do the talking, and you'll have the confirmation in your inbox.</p>
+      <a class="btn btn-light" href="#request">
+        Request a booking
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+      </a>
+      <p class="final-note">$6 only when the shop confirms · nothing to pay today</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="#top">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
+              <path d="M17.4 6.6a7.7 7.7 0 0 1 0 10.8M6.6 17.4a7.7 7.7 0 0 1 0-10.8"/>
+            </svg>
+          </span>
+          RingSeoul
+        </a>
+        <p class="footer-tag">24/7 Korean phone booking for travellers. You send the link; we make the call.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="#how">How it works</a>
+        <a href="#coverage">What we book</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#request">Request a booking</a>
+      </nav>
+    </div>
+    <div class="footer-legal">
+      <p class="copy">© 2026 RingSeoul · Early access beta, Seoul.</p>
+      <p>Prices shown in USD. Charged only after a shop confirms a booking. During the beta, payment is arranged by email after confirmation.</p>
+      <p>RingSeoul is an independent service and is not affiliated with Naver, Kakao, CatchTable or any venue listed on this page.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="mobile-cta">
+  <a href="#request">
+    <span>
+      <b>Request a booking</b>
+      <small>$6 only when it's confirmed</small>
+    </span>
+    <span class="arrow" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+    </span>
+  </a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'ringseoul.requests.v1';
+
+  /* ---------- header state ---------- */
+  var header = document.querySelector('.site-header');
+  function onScroll() {
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 6);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* ---------- reveal on scroll ---------- */
+  var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- mobile sticky CTA ---------- */
+  var body = document.body;
+  var requestSection = document.getElementById('request');
+  var formInView = false;
+  if ('IntersectionObserver' in window && requestSection) {
+    var formIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) { formInView = entry.isIntersecting; });
+      syncCta();
+    }, { threshold: 0.08 });
+    formIO.observe(requestSection);
+  }
+  function syncCta() {
+    var nearTop = window.scrollY < 420;
+    body.classList.toggle('show-mobile-cta', !nearTop && !formInView);
+  }
+  window.addEventListener('scroll', syncCta, { passive: true });
+  syncCta();
+
+  /* ---------- dates ---------- */
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function isoDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  var todayISO = isoDate(new Date());
+  var dateInputs = document.querySelectorAll('input[type="date"]');
+  Array.prototype.forEach.call(dateInputs, function (input) {
+    input.min = todayISO;
+  });
+  var date1 = document.getElementById('date1');
+  if (date1 && !date1.value) date1.value = todayISO;
+
+  /* ---------- form ---------- */
+  var form = document.getElementById('booking-form');
+  var card = document.getElementById('form-card');
+  var date2 = document.getElementById('date2');
+  var time2 = document.getElementById('time2');
+
+  function clearSecondValidity() {
+    if (!date2 || !time2) return;
+    date2.setCustomValidity('');
+    time2.setCustomValidity('');
+  }
+  function syncSecondChoice() {
+    if (!date2 || !time2) return;
+    clearSecondValidity();
+    var hasDate = date2.value !== '';
+    var hasTime = time2.value !== '';
+    if (hasDate !== hasTime) {
+      var msg = 'Add both a date and a time for your second choice, or leave both empty.';
+      date2.setCustomValidity(msg);
+      time2.setCustomValidity(msg);
+    }
+  }
+  if (date2) date2.addEventListener('change', syncSecondChoice);
+  if (date2) date2.addEventListener('input', syncSecondChoice);
+  if (time2) time2.addEventListener('change', syncSecondChoice);
+  if (time2) time2.addEventListener('input', syncSecondChoice);
+
+  function formatDate(value) {
+    if (!value) return '';
+    var parts = value.split('-');
+    if (parts.length !== 3) return value;
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    if (isNaN(d.getTime())) return value;
+    try {
+      return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      return value;
+    }
+  }
+  function formatTime(value) {
+    if (!value) return '';
+    var parts = value.split(':');
+    if (parts.length < 2) return value;
+    var h = Number(parts[0]);
+    var m = parts[1];
+    if (isNaN(h)) return value;
+    var suffix = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return h12 + ':' + m + ' ' + suffix;
+  }
+  function newRequestId() {
+    var d = new Date();
+    var stamp = String(d.getFullYear()).slice(2) + pad(d.getMonth() + 1) + pad(d.getDate());
+    var rand = Math.random().toString(36).slice(2, 5).toUpperCase();
+    return 'RS-' + stamp + '-' + rand;
+  }
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  function saveRequest(record) {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      var list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+      list.push(record);
+      if (list.length > 30) list = list.slice(list.length - 30);
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {
+      /* storage can be unavailable (private mode); the request still completes in-session */
+    }
+  }
+
+  if (form) {
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      syncSecondChoice();
+
+      if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+        if (typeof form.reportValidity === 'function') form.reportValidity();
+        return;
+      }
+
+      var sectorInput = form.querySelector('input[name="sector"]:checked');
+      var sectorLabel = sectorInput ? (sectorInput.getAttribute('data-label') || sectorInput.value) : 'Not specified';
+      var shop = document.getElementById('shop').value.trim();
+      var name = document.getElementById('name').value.trim();
+      var email = document.getElementById('email').value.trim();
+      var party = document.getElementById('party').value;
+      var notes = document.getElementById('notes').value.trim();
+      var first = formatDate(date1.value) + ' · ' + formatTime(document.getElementById('time1').value);
+      var second = (date2.value && time2.value) ? (formatDate(date2.value) + ' · ' + formatTime(time2.value)) : '';
+      var id = newRequestId();
+
+      saveRequest({
+        id: id,
+        createdAt: new Date().toISOString(),
+        sector: sectorLabel,
+        shop: shop,
+        date1: date1.value,
+        time1: document.getElementById('time1').value,
+        date2: date2.value,
+        time2: time2.value,
+        party: Number(party) || null,
+        name: name,
+        email: email,
+        notes: notes
+      });
+
+      setText('s-id', id);
+      setText('s-shop', shop);
+      setText('s-sector', sectorLabel);
+      setText('s-first', first);
+      setText('s-email', email);
+      setText('s-name', name);
+      setText('s-party', party + (Number(party) === 1 ? ' person' : ' people'));
+
+      var secondRow = document.getElementById('s-second-row');
+      if (second) {
+        setText('s-second', second);
+        if (secondRow) secondRow.hidden = false;
+      } else if (secondRow) {
+        secondRow.hidden = true;
+      }
+
+      card.classList.add('is-success');
+      syncCta();
+
+      var title = document.getElementById('success-title');
+      var targetTop = card.getBoundingClientRect().top + window.pageYOffset - 88;
+      try {
+        window.scrollTo({ top: targetTop, behavior: reduceMotion ? 'auto' : 'smooth' });
+      } catch (e) {
+        window.scrollTo(0, targetTop);
+      }
+      if (title && typeof title.focus === 'function') {
+        setTimeout(function () { title.focus({ preventScroll: true }); }, 260);
+      }
+    });
+
+    var again = document.getElementById('again');
+    if (again) {
+      again.addEventListener('click', function () {
+        card.classList.remove('is-success');
+        form.reset();
+        date1.value = todayISO;
+        clearSecondValidity();
+        syncCta();
+        var targetTop = card.getBoundingClientRect().top + window.pageYOffset - 88;
+        try {
+          window.scrollTo({ top: targetTop, behavior: reduceMotion ? 'auto' : 'smooth' });
+        } catch (e) {
+          window.scrollTo(0, targetTop);
+        }
+        setTimeout(function () {
+          var firstField = document.getElementById('shop');
+          if (firstField) firstField.focus({ preventScroll: true });
+        }, 260);
+      });
+    }
+  }
+})();
+</script>
+</body>
+</html>
