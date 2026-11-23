@@ -102,6 +102,11 @@ section[id]{scroll-margin-top:80px}
 .btn-light:hover{background:var(--accent);transform:translateY(-1px)}
 .btn-block{width:100%}
 .btn[disabled]{opacity:.55;cursor:progress}
+.btn-spinner{display:none;flex:none;width:15px;height:15px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:btnspin .7s linear infinite}
+.btn[aria-busy="true"] .btn-spinner{display:block}
+.btn[aria-busy="true"] .btn-arrow{display:none}
+@keyframes btnspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.btn-spinner{animation-duration:1.6s}}
 .btn-sm{min-height:44px;padding:0 18px;font-size:14.5px}
 
 /* ============================================================
@@ -374,6 +379,9 @@ legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--in
 .form-disclaimer{font-size:12.3px;color:var(--muted);text-align:center;line-height:1.5}
 .form-disclaimer b{color:var(--ink-soft);font-weight:600}
 .legend-required{font-weight:400;color:var(--muted)}
+.form-error{margin-top:2px;padding:13px 15px;border-radius:12px;background:#FFF4F1;border:1px solid rgba(200,50,30,.28);color:#8A2A18;font-size:13.2px;line-height:1.55}
+.form-error a{color:inherit;font-weight:600;text-decoration:underline;overflow-wrap:anywhere}
+.form-error[hidden]{display:none}
 
 /* Success */
 .success{display:none}
@@ -965,7 +973,7 @@ html.js .reveal.d3{transition-delay:.21s}
 
             <div class="field">
               <label for="email">Email <span class="legend-required">(required)</span></label>
-              <input type="email" id="email" name="email" required maxlength="120" autocomplete="email" inputmode="email" placeholder="you@example.com">
+              <input type="email" id="email" name="email" required maxlength="120" autocomplete="email" inputmode="email" placeholder="name@yourmail.com">
               <span class="hint">Where we send the confirmation — or the reason we couldn't get one.</span>
             </div>
 
@@ -976,10 +984,12 @@ html.js .reveal.d3{transition-delay:.21s}
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary btn-block">
-              Request this booking
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <span id="submit-label">Request this booking</span>
+              <svg class="btn-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
             </button>
+            <p class="form-error" id="form-error" role="alert" hidden></p>
             <p class="form-disclaimer">
               <b>Nothing is charged now.</b> You pay $6 only if the shop confirms —
               and you'll get the payment link by email. We use your email only for this request.
@@ -1154,6 +1164,7 @@ html.js .reveal.d3{transition-delay:.21s}
     </div>
     <div class="footer-legal">
       <p class="copy">© 2026 RingSeoul · Early access beta, Seoul.</p>
+      <p>Questions or a change to an existing request? Email <a href="mailto:hy00031618@gmail.com">hy00031618@gmail.com</a>.</p>
       <p>Prices shown in USD. Charged only after a shop confirms a booking. During the beta, payment is arranged by email after confirmation.</p>
       <p>RingSeoul is an independent service and is not affiliated with Naver, Kakao, CatchTable or any venue listed on this page.</p>
     </div>
@@ -1307,15 +1318,93 @@ html.js .reveal.d3{transition-delay:.21s}
     }
   }
 
+  var SUBMIT_ENDPOINT = 'https://formsubmit.co/ajax/hy00031618@gmail.com';
+  var CONTACT_EMAIL = 'hy00031618@gmail.com';
+  var BTN_IDLE = 'Request this booking';
+  var submitBtn = document.getElementById('submit-btn');
+  var submitLabel = document.getElementById('submit-label');
+  var formError = document.getElementById('form-error');
+  var isSubmitting = false;
+
+  function setSubmitting(on) {
+    isSubmitting = on;
+    if (submitBtn) {
+      if (on) {
+        submitBtn.setAttribute('disabled', 'disabled');
+      } else {
+        submitBtn.removeAttribute('disabled');
+      }
+      submitBtn.setAttribute('aria-busy', on ? 'true' : 'false');
+    }
+    if (submitLabel) submitLabel.textContent = on ? 'Sending…' : BTN_IDLE;
+    if (on && formError) formError.hidden = true;
+  }
+
+  function clearError() {
+    if (!formError) return;
+    formError.hidden = true;
+    formError.textContent = '';
+  }
+
+  function showError(text) {
+    if (!formError) {
+      window.alert(text + ' ' + CONTACT_EMAIL);
+      return;
+    }
+    formError.hidden = false;
+    formError.textContent = '';
+    formError.appendChild(document.createTextNode(text + ' '));
+    var link = document.createElement('a');
+    link.href = 'mailto:' + CONTACT_EMAIL;
+    link.textContent = CONTACT_EMAIL;
+    formError.appendChild(link);
+    formError.appendChild(document.createTextNode('.'));
+  }
+
+  function showSuccess(record, first, second) {
+    setText('s-id', record.id);
+    setText('s-shop', record.shop);
+    setText('s-sector', record.sector);
+    setText('s-first', first);
+    setText('s-email', record.email);
+    setText('s-name', record.name);
+    setText('s-party', record.party + (record.party === 1 ? ' person' : ' people'));
+
+    var secondRow = document.getElementById('s-second-row');
+    if (second) {
+      setText('s-second', second);
+      if (secondRow) secondRow.hidden = false;
+    } else if (secondRow) {
+      secondRow.hidden = true;
+    }
+
+    card.classList.add('is-success');
+    syncCta();
+
+    var title = document.getElementById('success-title');
+    var targetTop = card.getBoundingClientRect().top + window.pageYOffset - 88;
+    try {
+      window.scrollTo({ top: targetTop, behavior: reduceMotion ? 'auto' : 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, targetTop);
+    }
+    if (title && typeof title.focus === 'function') {
+      setTimeout(function () { title.focus({ preventScroll: true }); }, 260);
+    }
+  }
+
   if (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
+      if (isSubmitting) return;
       syncSecondChoice();
 
       if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
         if (typeof form.reportValidity === 'function') form.reportValidity();
         return;
       }
+
+      clearError();
 
       var sectorInput = form.querySelector('input[name="sector"]:checked');
       var sectorLabel = sectorInput ? (sectorInput.getAttribute('data-label') || sectorInput.value) : 'Not specified';
@@ -1327,10 +1416,11 @@ html.js .reveal.d3{transition-delay:.21s}
       var first = formatDate(date1.value) + ' · ' + formatTime(document.getElementById('time1').value);
       var second = (date2.value && time2.value) ? (formatDate(date2.value) + ' · ' + formatTime(time2.value)) : '';
       var id = newRequestId();
+      var createdAt = new Date().toISOString();
 
-      saveRequest({
+      var record = {
         id: id,
-        createdAt: new Date().toISOString(),
+        createdAt: createdAt,
         sector: sectorLabel,
         shop: shop,
         date1: date1.value,
@@ -1341,43 +1431,97 @@ html.js .reveal.d3{transition-delay:.21s}
         name: name,
         email: email,
         notes: notes
-      });
+      };
 
-      setText('s-id', id);
-      setText('s-shop', shop);
-      setText('s-sector', sectorLabel);
-      setText('s-first', first);
-      setText('s-email', email);
-      setText('s-name', name);
-      setText('s-party', party + (Number(party) === 1 ? ' person' : ' people'));
+      /* keep a local copy first, so a failed network call never loses the request */
+      saveRequest(record);
 
-      var secondRow = document.getElementById('s-second-row');
-      if (second) {
-        setText('s-second', second);
-        if (secondRow) secondRow.hidden = false;
-      } else if (secondRow) {
-        secondRow.hidden = true;
+      var payload = {
+        _subject: 'RingSeoul request ' + id + ' — ' + sectorLabel + ' · ' + shop.slice(0, 70),
+        _template: 'table',
+        _captcha: 'false',
+        _replyto: email,
+        request_id: id,
+        sector: sectorLabel,
+        shop: shop,
+        first_choice: first || '—',
+        second_choice: second || '—',
+        party: party,
+        name: name,
+        email: email,
+        notes: notes || '—',
+        submitted_at: createdAt,
+        from_page: window.location.href
+      };
+
+      setSubmitting(true);
+
+      var settled = false;
+      var controller = null;
+      var timer = null;
+      if (typeof window.AbortController === 'function') {
+        controller = new window.AbortController();
+        timer = setTimeout(function () { if (!settled) { try { controller.abort(); } catch (e) {} } }, 25000);
       }
 
-      card.classList.add('is-success');
-      syncCta();
+      function failed(needsActivation) {
+        if (settled) return;
+        settled = true;
+        if (timer) clearTimeout(timer);
+        setSubmitting(false);
+        showError(needsActivation
+          ? 'We could not hand your request to our booking desk just now. Nothing has been charged — please email us the details and we will call the shop for you:'
+          : 'We could not send your request just now. Nothing has been charged. Please try again — or email us the details and we will call the shop for you:');
+        if (formError && typeof formError.scrollIntoView === 'function') {
+          try { formError.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' }); } catch (e) {}
+        }
+      }
 
-      var title = document.getElementById('success-title');
-      var targetTop = card.getBoundingClientRect().top + window.pageYOffset - 88;
-      try {
-        window.scrollTo({ top: targetTop, behavior: reduceMotion ? 'auto' : 'smooth' });
-      } catch (e) {
-        window.scrollTo(0, targetTop);
+      var requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      };
+      if (controller) requestOptions.signal = controller.signal;
+
+      if (typeof window.fetch !== 'function') {
+        failed(false);
+        return;
       }
-      if (title && typeof title.focus === 'function') {
-        setTimeout(function () { title.focus({ preventScroll: true }); }, 260);
-      }
+
+      window.fetch(SUBMIT_ENDPOINT, requestOptions)
+        .then(function (response) {
+          return response.text().then(function (raw) {
+            var data = null;
+            try { data = JSON.parse(raw); } catch (e) { data = null; }
+            return { ok: response.ok, status: response.status, data: data, raw: raw || '' };
+          });
+        })
+        .then(function (result) {
+          if (settled) return;
+          var data = result.data || {};
+          var flag = data.success;
+          var delivered = result.ok && (flag === true || flag === 'true' || flag === 1 || flag === '1');
+          if (delivered) {
+            settled = true;
+            if (timer) clearTimeout(timer);
+            setSubmitting(false);
+            showSuccess(record, first, second);
+          } else {
+            var msg = (typeof data.message === 'string' ? data.message : '') + ' ' + result.raw;
+            failed(/activat/i.test(msg));
+          }
+        })
+        .catch(function () {
+          failed(false);
+        });
     });
 
     var again = document.getElementById('again');
     if (again) {
       again.addEventListener('click', function () {
         card.classList.remove('is-success');
+        clearError();
         form.reset();
         date1.value = todayISO;
         clearSecondValidity();
