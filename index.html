@@ -1513,65 +1513,104 @@ html.js .reveal.d3{transition-delay:.21s}
 
       setSubmitting(true);
 
+      /* FormSubmit's relay can take a while (we have seen 40-90s), so give it room: a short
+         abort made a request that was still on its way look like a failure. */
       var settled = false;
       var controller = null;
       var timer = null;
-      if (typeof window.AbortController === 'function') {
-        controller = new window.AbortController();
-        timer = setTimeout(function () { if (!settled) { try { controller.abort(); } catch (e) {} } }, 25000);
+      var slowTimer = setTimeout(function () {
+        if (!settled && submitLabel) submitLabel.textContent = 'Still sending — this can take a minute';
+      }, 12000);
+
+      function stopTimers() {
+        if (timer) clearTimeout(timer);
+        if (slowTimer) clearTimeout(slowTimer);
       }
 
-      function failed(needsActivation) {
+      function showFailure(text) {
         if (settled) return;
         settled = true;
-        if (timer) clearTimeout(timer);
+        stopTimers();
         setSubmitting(false);
-        showError(needsActivation
-          ? 'Our booking desk could not receive the request just now. Nothing has been charged — please send it once more in a few minutes.'
-          : 'We could not send your request just now. Nothing has been charged. Please check your connection and try again.', record.id);
+        showError(text, record.id);
         if (formError && typeof formError.scrollIntoView === 'function') {
           try { formError.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' }); } catch (e) {}
         }
       }
 
-      var requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(payload)
-      };
-      if (controller) requestOptions.signal = controller.signal;
+      function deliver(attempt) {
+        var body = {};
+        for (var key in payload) {
+          if (Object.prototype.hasOwnProperty.call(payload, key)) body[key] = payload[key];
+        }
+        if (attempt > 1) body.attempt = String(attempt);
+
+        controller = (typeof window.AbortController === 'function') ? new window.AbortController() : null;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(function () {
+          if (settled) return;
+          try { if (controller) controller.abort(); } catch (e) {}
+        }, 90000);
+
+        var requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(body),
+          /* let the request finish even if the visitor leaves the page */
+          keepalive: true
+        };
+        if (controller) requestOptions.signal = controller.signal;
+
+        window.fetch(SUBMIT_ENDPOINT, requestOptions)
+          .then(function (response) {
+            return response.text().then(function (raw) {
+              var data = null;
+              try { data = JSON.parse(raw); } catch (e) { data = null; }
+              return { ok: response.ok, status: response.status, data: data, raw: raw || '' };
+            });
+          })
+          .then(function (result) {
+            if (settled) return;
+            var data = result.data || {};
+            var flag = data.success;
+            var delivered = result.ok && (flag === true || flag === 'true' || flag === 1 || flag === '1');
+            if (delivered) {
+              settled = true;
+              stopTimers();
+              setSubmitting(false);
+              showSuccess(record, first, second);
+              return;
+            }
+            if (attempt === 1) { retryOnce(); return; }
+            var msg = (typeof data.message === 'string' ? data.message : '') + ' ' + result.raw;
+            showFailure(/activat/i.test(msg)
+              ? 'Our booking desk could not receive the request just now. Nothing has been charged — please send it once more in a few minutes.'
+              : 'We could not send your request just now. Nothing has been charged. Please check your connection and try again.');
+          })
+          .catch(function () {
+            if (settled) return;
+            var timedOut = !!(controller && controller.signal && controller.signal.aborted);
+            if (timedOut) {
+              showFailure('This is taking longer than usual. Your request may still reach our booking desk — please give it a few minutes before sending it again.');
+              return;
+            }
+            if (attempt === 1) { retryOnce(); return; }
+            showFailure('We could not send your request just now. Nothing has been charged. Please check your connection and try again.');
+          });
+      }
+
+      /* one quiet second try: the relay occasionally answers with a transient server error */
+      function retryOnce() {
+        if (submitLabel) submitLabel.textContent = 'Reaching our booking desk…';
+        setTimeout(function () { if (!settled) deliver(2); }, 2500);
+      }
 
       if (typeof window.fetch !== 'function') {
-        failed(false);
+        showFailure('We could not send your request from this browser. Please try another browser or come back later.');
         return;
       }
 
-      window.fetch(SUBMIT_ENDPOINT, requestOptions)
-        .then(function (response) {
-          return response.text().then(function (raw) {
-            var data = null;
-            try { data = JSON.parse(raw); } catch (e) { data = null; }
-            return { ok: response.ok, status: response.status, data: data, raw: raw || '' };
-          });
-        })
-        .then(function (result) {
-          if (settled) return;
-          var data = result.data || {};
-          var flag = data.success;
-          var delivered = result.ok && (flag === true || flag === 'true' || flag === 1 || flag === '1');
-          if (delivered) {
-            settled = true;
-            if (timer) clearTimeout(timer);
-            setSubmitting(false);
-            showSuccess(record, first, second);
-          } else {
-            var msg = (typeof data.message === 'string' ? data.message : '') + ' ' + result.raw;
-            failed(/activat/i.test(msg));
-          }
-        })
-        .catch(function () {
-          failed(false);
-        });
+      deliver(1);
     });
 
     var again = document.getElementById('again');

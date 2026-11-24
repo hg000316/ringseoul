@@ -35,3 +35,9 @@ replying in Gmail goes straight to them.
 - The page keeps a copy of every attempt in `localStorage` (`ringseoul.requests.v1`) before
 sending, and on failure shows the request ID so a visitor can quote it when they write
 back through the form.
+- FormSubmit's relay is slow: measured 2026-11-24 from the live GitHub Pages origin, one
+request took 44s and failed with `{"message":"Server Error"}` (nothing delivered) and the
+next took 87s and succeeded. So the page waits up to 90 seconds, says "still sending"
+after 12s, retries once on a server/network failure (`attempt` field marks it), and sends
+with `keepalive` so the request survives the visitor leaving the page. Lower the timeout
+only against evidence that the relay got faster.
