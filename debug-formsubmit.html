@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>FormSubmit alias check</title>
+<style>body{font:14px/1.5 monospace;padding:24px;max-width:820px}#out{white-space:pre-wrap;background:#f4f4f2;padding:14px;border-radius:10px;margin-top:16px}</style>
+</head><body>
+<h1>FormSubmit alias check</h1>
+<p>Posts one marker message to the alias and prints the raw answer.</p>
+<button id="go">Send to alias</button>
+<button id="go-email">Send to old address</button>
+<pre id="out">idle</pre>
+<script>
+var out = document.getElementById('out');
+function run(url, label) {
+  out.textContent = label + ' → sending…';
+  fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body: JSON.stringify({
+      _subject: '[TEST] RingSeoul FormSubmit ' + label + ' — ignore',
+      _template: 'table',
+      _captcha: 'false',
+      name: 'Deploy Check (TEST)',
+      message: 'Diagnostic of the ' + label + ' endpoint from the live GitHub Pages origin. [TEST] ignore.'
+    })
+  }).then(function (r) {
+    return r.text().then(function (t) { out.textContent = label + '\nHTTP ' + r.status + ' ok=' + r.ok + '\n\n' + t.slice(0, 1200); });
+  }).catch(function (e) { out.textContent = label + '\nFETCH ERROR: ' + e; });
+}
+document.getElementById('go').onclick = function () { run('https://formsubmit.co/ajax/1852e961b1c84e4387176552bbb8e5b3', 'alias'); };
+document.getElementById('go-email').onclick = function () { run('https://formsubmit.co/ajax/hy00031618@gmail.com', 'address'); };
+</script>
+</body></html>
