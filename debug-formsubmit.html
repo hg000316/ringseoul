@@ -1,31 +1,39 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><title>FormSubmit alias check</title>
-<style>body{font:14px/1.5 monospace;padding:24px;max-width:820px}#out{white-space:pre-wrap;background:#f4f4f2;padding:14px;border-radius:10px;margin-top:16px}</style>
+<html lang="en"><head><meta charset="utf-8"><title>FormSubmit alias timing</title>
+<style>body{font:14px/1.5 monospace;padding:24px;max-width:860px}#out{white-space:pre-wrap;background:#f4f4f2;padding:14px;border-radius:10px;margin-top:16px}</style>
 </head><body>
-<h1>FormSubmit alias check</h1>
-<p>Posts one marker message to the alias and prints the raw answer.</p>
-<button id="go">Send to alias</button>
-<button id="go-email">Send to old address</button>
+<h1>FormSubmit alias timing</h1>
+<p>Two sequential posts to the alias, each with elapsed time.</p>
+<button id="go">Run twice</button>
 <pre id="out">idle</pre>
 <script>
 var out = document.getElementById('out');
-function run(url, label) {
-  out.textContent = label + ' → sending…';
-  fetch(url, {
+var URL_A = 'https://formsubmit.co/ajax/1852e961b1c84e4387176552bbb8e5b3';
+function once(n) {
+  var t0 = performance.now();
+  return fetch(URL_A, {
     method: 'POST',
     headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     body: JSON.stringify({
-      _subject: '[TEST] RingSeoul FormSubmit ' + label + ' — ignore',
+      _subject: '[TEST] RingSeoul alias timing ' + n + ' — ignore',
       _template: 'table',
       _captcha: 'false',
       name: 'Deploy Check (TEST)',
-      message: 'Diagnostic of the ' + label + ' endpoint from the live GitHub Pages origin. [TEST] ignore.'
+      message: 'Timing run ' + n + ' at ' + new Date().toISOString() + '. [TEST] ignore.'
     })
   }).then(function (r) {
-    return r.text().then(function (t) { out.textContent = label + '\nHTTP ' + r.status + ' ok=' + r.ok + '\n\n' + t.slice(0, 1200); });
-  }).catch(function (e) { out.textContent = label + '\nFETCH ERROR: ' + e; });
+    return r.text().then(function (t) {
+      var ms = Math.round(performance.now() - t0);
+      out.textContent += '\nrun ' + n + ': HTTP ' + r.status + ' in ' + ms + ' ms :: ' + t.slice(0, 160);
+      return ms;
+    });
+  }).catch(function (e) {
+    out.textContent += '\nrun ' + n + ': ERROR after ' + Math.round(performance.now() - t0) + ' ms :: ' + e;
+  });
 }
-document.getElementById('go').onclick = function () { run('https://formsubmit.co/ajax/1852e961b1c84e4387176552bbb8e5b3', 'alias'); };
-document.getElementById('go-email').onclick = function () { run('https://formsubmit.co/ajax/hy00031618@gmail.com', 'address'); };
+document.getElementById('go').onclick = function () {
+  out.textContent = 'started ' + new Date().toISOString();
+  once(1).then(function () { return once(2); });
+};
 </script>
 </body></html>
